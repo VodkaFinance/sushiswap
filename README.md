@@ -1,6 +1,6 @@
-# SushiSwap 🍣
+# VodkaSwap
 
-https://app.sushiswap.org. Feel free to read the code. More details coming soon.
+Based on https://app.sushiswap.org
 
 ## License
 
