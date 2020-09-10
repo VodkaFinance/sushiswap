@@ -171,7 +171,7 @@ contract MasterBartender is Ownable {
         return user.amount.mul(accVodkaPerShare).div(1e12).sub(user.rewardDebt);
     }
 
-    // Update reward vairables for all pools. Be careful of gas spending!
+    // Update reward variables for all pools. Be careful of gas spending!
     function massUpdatePools() public {
         uint256 length = poolInfo.length;
         for (uint256 pid = 0; pid < length; ++pid) {
@@ -205,10 +205,14 @@ contract MasterBartender is Ownable {
         updatePool(_pid);
         if (user.amount > 0) {
             uint256 pending = user.amount.mul(pool.accVodkaPerShare).div(1e12).sub(user.rewardDebt);
-            safeVodkaTransfer(msg.sender, pending);
+            if(pending > 0) {
+                safeVodkaTransfer(msg.sender, pending);
+            }
         }
-        pool.lpToken.safeTransferFrom(address(msg.sender), address(this), _amount);
-        user.amount = user.amount.add(_amount);
+        if(_amount > 0) {
+            pool.lpToken.safeTransferFrom(address(msg.sender), address(this), _amount);
+            user.amount = user.amount.add(_amount);
+        }
         user.rewardDebt = user.amount.mul(pool.accVodkaPerShare).div(1e12);
         emit Deposit(msg.sender, _pid, _amount);
     }
@@ -220,10 +224,14 @@ contract MasterBartender is Ownable {
         require(user.amount >= _amount, "withdraw: not good");
         updatePool(_pid);
         uint256 pending = user.amount.mul(pool.accVodkaPerShare).div(1e12).sub(user.rewardDebt);
-        safeVodkaTransfer(msg.sender, pending);
-        user.amount = user.amount.sub(_amount);
+        if(pending > 0) {
+            safeVodkaTransfer(msg.sender, pending);
+        }
+        if(_amount > 0) {
+            user.amount = user.amount.sub(_amount);
+            pool.lpToken.safeTransfer(address(msg.sender), _amount);
+        }
         user.rewardDebt = user.amount.mul(pool.accVodkaPerShare).div(1e12);
-        pool.lpToken.safeTransfer(address(msg.sender), _amount);
         emit Withdraw(msg.sender, _pid, _amount);
     }
 
